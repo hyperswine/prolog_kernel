@@ -1,6 +1,5 @@
 import sys
 import copy
-import re
 
 uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 infixOps = ("*is*", "==", "<", ">", "+", "-", "*", "/")
@@ -9,15 +8,8 @@ trace = 0
 goalId = 100
 indent = ""
 
-print_function = None
 
-
-def Print(*args, **kwargs):
-    if print_function:
-        print_function(*args, **kwargs)
-
-
-def fatal(self, mesg):
+def fatal(mesg):
     sys.stderr.write("Fatal: %s\n" % mesg)
 
 
@@ -41,15 +33,15 @@ def split(l, sep, All=1):
     return [l]
 
 
-def isVariable(term):
+def is_variable(term):
     return term.args == [] and term.pred[0:1] in uppercase
 
 
-def isConstant(term):
+def is_constant(term):
     return term.args == [] and not term.pred[0:1] in uppercase
 
 
-def splitInfix(s):
+def split_infix(s):
     for op in infixOps:
         p = split(s, op, All=0)
         if len(p) > 1:
@@ -60,7 +52,7 @@ def splitInfix(s):
 class Term:
     def __init__(self, s, args=None):
         if not args:
-            parts = splitInfix(s)
+            parts = split_infix(s)
         if args:            # Predicate and args seperately
             self.pred = s
             self.args = args
@@ -149,11 +141,6 @@ def eq(a, b): return int(a.pred) == int(b.pred)
 
 operators = {'+': add, '-': sub, '*': mul, '<': lt}
 
-# A Goal is a rule in at a certain point in its computation.
-# env contains definitions (so far), inx indexes the current term
-# being satisfied, parent is another Goal which spawned this one
-# and which we will unify back to when this Goal is complete.
-
 
 def unify(src, srcEnv, dest, destEnv):
     "update dest env from src. return true if unification succeeds"
@@ -164,14 +151,14 @@ def unify(src, srcEnv, dest, destEnv):
     if src.pred == '_' or dest.pred == '_':
         return sts(1, "Wildcard")
 
-    if isVariable(src):
+    if is_variable(src):
         srcVal = peval(src, srcEnv)
         if not srcVal:
             return sts(1, "Src unset")
         else:
             return sts(unify(srcVal, srcEnv, dest, destEnv), "Unify to Src Value")
 
-    if isVariable(dest):
+    if is_variable(dest):
         destVal = peval(dest, destEnv)           # evaluate destination
         if destVal:
             return sts(unify(src, srcEnv, destVal, destEnv), "Unify to Dest value")
@@ -228,47 +215,55 @@ def search(term):
             continue
 
         # No. more to do with this goal.
-        term = c.rule.goals[c.inx]            # What we want to solve
+        term = c.rule.goals[c.inx]
 
-        pred = term.pred                    # Special term?
+        # Special term?
+        pred = term.pred                    
         if pred in ['*is*', 'cut', 'fail', '<', '==']:
             if pred == '*is*':
                 ques = peval(term.args[0], c.env)
                 ans = peval(term.args[1], c.env)
                 if ques == None:
-                    c.env[term.args[0].pred] = ans  # Set variable
+                    # Set variable
+                    c.env[term.args[0].pred] = ans
                 elif ques.pred != ans.pred:
-                    continue                # Mismatch, fail
+                    continue
             elif pred == 'cut':
-                queue = []  # Zap the competition
+                queue = []
             elif pred == 'fail':
-                continue   # Dont succeed
+                continue
             elif not peval(term, c.env):
-                continue  # Fail if not true
-            c.inx = c.inx + 1               # Succeed. resume self.
+                # Fail if not true
+                continue
+            # Succeed. resume self.
+            c.inx = c.inx + 1
             queue.insert(0, c)
             continue
 
-        for rule in rules:                   # Not special. Walk rule database
+        # Not special. Walk rule database
+        for rule in rules:
             if rule.head.pred != term.pred:
                 continue
             if len(rule.head.args) != len(term.args):
                 continue
-            child = Goal(rule, c)               # A possible subgoal
+            # A possible subgoal
+            child = Goal(rule, c)
             ans = unify(term, c.env, rule.head, child.env)
-            if ans:                    # if unifies, queue it up
+            # if unifies, queue it up
+            if ans:
                 queue.insert(0, child)
                 if trace:
                     Print("Queue", child)
 
 
-def peval(term, env):      # eval all variables within a term to constants
+# eval all variables within a term to constants
+def peval(term, env):
     special = operators.get(term.pred)
     if special:
         return special(eval(term.args[0], env), eval(term.args[1], env))
-    if isConstant(term):
+    if is_constant(term):
         return term
-    if isVariable(term):
+    if is_variable(term):
         ans = env.get(term.pred)
         if not ans:
             return None
