@@ -9,7 +9,7 @@ packages = [{include = "prolog_kernel"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 pyswip = "^0.2.10"
-# ipykernel = "*"
+ipykernel = "^6.22.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,3 +1,6 @@
+I saw this code
+
+```python
 import sys
 import copy
 
@@ -276,3 +279,5 @@ def peval(term, env):
             return None
         args.append(a)
     return Term(term.pred, args)
+
+```

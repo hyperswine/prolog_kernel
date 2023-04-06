@@ -1,11 +1,7 @@
 from ipykernel.kernelbase import Kernel
-import prolog
-import re
 
 usage = """\
-This is the Prolog kernel.
-
-Example Rules:
+Rules:
     child(stephanie).
     child(thad).
     mother_child(trude, sally).
@@ -14,12 +10,16 @@ Example Rules:
     father_child(tom, erica).
     father_child(mike, tom).
  
-    sibling(X, Y) : parent_child(Z, X), parent_child(Z, Y).
+    sibling(X, Y): parent_child(Z, X), parent_child(Z, Y).
  
-    parent_child(X, Y) : father_child(X, Y).
-    parent_child(X, Y) : mother_child(X, Y).
+    parent_child(X, Y): father_child(X, Y).
+    parent_child(X, Y): mother_child(X, Y).
 
-Example Queries:
+    weather(sunny): NOT weather(rainy).
+
+    weather(sunny): NOT weather(rainy), NOT weather(cloudy).
+
+Queries:
     child(NAME)?
     sibling(sally, erica)?
     father_child(Father, Child)?
@@ -33,11 +33,14 @@ class PrologKernel(Kernel):
     language_version = '0.1'
     banner = "Prolog kernel - it just works"
     # search = None
+    # or text/x-prolog
+    # 'codemirror_mode': {'name': 'prolog'},
+    # 'pygments_lexer': 'prolog',
+    # not sure about file extensions
     language_info = {
-        'mimetype': 'text/x-prolog',
-        'name': 'prolog',
-        'codemirror_mode': {'name': 'prolog'},
-        'pygments_lexer': 'prolog',
+        'mimetype': 'text/plain',
+        'name': 'Prolog',
+        'file_extension': '.pl'
     }
 
     # todo, I think just return {'message': msg}
