@@ -22,7 +22,7 @@ def install_my_kernel_spec(user=True, prefix=None):
 
         print('Installing IPython kernel spec')
         KernelSpecManager().install_kernel_spec(
-            td, 'prolog_k2', user=user, prefix=prefix)
+            td, 'prolog_kernel', user=user, prefix=prefix)
 
 
 def _is_root():
