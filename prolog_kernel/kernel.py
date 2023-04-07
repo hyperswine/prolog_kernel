@@ -1,5 +1,5 @@
 from ipykernel.kernelbase import Kernel
-from pyswip import Prolog
+from pyswip import Prolog, Functor, Variable, Query, call
 
 # prolog = Prolog()
 
@@ -47,6 +47,12 @@ class PrologKernel(Kernel):
         'file_extension': '.txt'
     }
 
+    def __init__(self, **kwargs):
+        Kernel.__init__(self, **kwargs)
+
+        self.assertz = Functor("assertz", 1)
+        self.X = Variable()
+
     def print(self, msg):
         return {'message': msg}
 
@@ -57,16 +63,17 @@ class PrologKernel(Kernel):
         return usage
 
     def process_prolog(self, code):
+        # check if is a fact, rule or query
+
         res2 = ""
 
-        try:
-            Prolog.assertz("father(michael, john)")
-            Prolog.assertz("father(michael, gina)")
-
-            for soln in Prolog.query("father(michael, X)"):
-                res2 += f"{soln}\n"
-        except Exception as e:
-            res2 += f"{e}\n"
+        father = Functor("father", 2)
+        call(self.assertz(father("michael", "john")))
+        X = Variable()
+        q = Query(father("michael", X))
+        while q.nextSolution():
+            res2 += X.value + " "
+        q.closeQuery()
 
         return res2
 
