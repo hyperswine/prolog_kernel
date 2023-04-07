@@ -13,18 +13,6 @@ kernel_json = {
     "language": "prolog",
 }
 
-
-# def install_my_kernel_spec(user=True, prefix=None):
-#     with TemporaryDirectory() as td:
-#         os.chmod(td, 0o755)
-#         with open(os.path.join(td, 'kernel.json'), 'w') as f:
-#             json.dump(kernel_json, f, sort_keys=True)
-#         # Copy resources once they're specified?
-
-#         print('Installing IPython kernel spec')
-#         KernelSpecManager().install_kernel_spec(
-#             td, 'prolog_kernel', user=user, prefix=prefix)
-
 def install_my_kernel_spec(user=True, prefix=None):
     with TemporaryDirectory() as td:
         os.chmod(td, 0o755)  # Starts off as 700, not user readable
