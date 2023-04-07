@@ -1,3 +1,4 @@
+from functools import reduce
 from ipykernel.kernelbase import Kernel
 from pyswip import Prolog, Functor, Variable, Query, call
 
@@ -58,22 +59,25 @@ class PrologKernel(Kernel):
     def get_usage(self):
         return usage
 
-    def process_prolog(self, code):
-        # check if is a fact, rule or query
+    def query_solutions(self, query: Query):
+        X = Variable()
+        while query.nextSolution():
+            yield X.value
+
+    def process_prolog(self, code: str):
+        # TODO, check if is a fact, rule or query
 
         assertz = Functor("assertz", 1)
-
-        res = ""
-
         father = Functor("father", 2)
+        # check if call worked, 1 if true I think
         call(assertz(father("michael", "john")))
+
         X = Variable()
         q = Query(father("michael", X))
-        while q.nextSolution():
-            res += X.value + " "
-        q.closeQuery()
 
-        return "empty" if res == "" else res
+        # q.closeQuery()
+
+        return str(reduce(lambda acc, next: acc + next, [x for x in self.query_solutions(q)]))
 
     def do_execute(self, code, silent, store_history=True, user_expressions=None,
                    allow_stdin=False):
