@@ -55,13 +55,14 @@ class PrologKernel(Kernel):
 
     def get_usage(self):
         return usage
-    
-    def process_prolog(self, code):
-        Prolog.assertz("father(michael, john)")
-        Prolog.assertz("father(michael, gina)")
 
+    def process_prolog(self, code):
         res2 = ""
+
         try:
+            Prolog.assertz("father(michael, john)")
+            Prolog.assertz("father(michael, gina)")
+
             for soln in Prolog.query("father(michael, X)"):
                 res2 += f"{soln}\n"
         except Exception as e:
