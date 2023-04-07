@@ -48,15 +48,13 @@ class PrologKernel(Kernel):
 
     def handle_query(self, code):
         query_str = code[:-1]  # Remove the '?' at the end
-        solutions = []
 
         try:
-            for sol in self.prolog.query(query_str):
-                solutions.append(sol)
+            res = str([str(sol) for sol in self.prolog.query(query_str)])
         except Exception as e:
-            return f"Error: {str(e)}"
-
-        return str(solutions)
+            res = f"Error: {str(e)}"
+        
+        return res
 
     def handle_assertion(self, code):
         try:
