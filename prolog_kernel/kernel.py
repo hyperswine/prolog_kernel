@@ -1,8 +1,6 @@
 from functools import reduce
 from ipykernel.kernelbase import Kernel
-from pyswip import Prolog, Functor, Variable, Query, call
-
-# prolog = Prolog()
+from pyswip import Functor, Variable, Query, call
 
 usage = """\
 Rules:
@@ -29,7 +27,7 @@ Queries:
     father_child(Father, Child)?
 """
 
-
+# TODO: Implement this, especially redo and complete process_prolog
 class PrologKernel(Kernel):
     implementation = 'Prolog'
     implementation_version = '1.0'
@@ -51,10 +49,10 @@ class PrologKernel(Kernel):
         Kernel.__init__(self, **kwargs)
 
     def print(self, msg):
-        return {'message': msg}
+        pass
 
     def error(self, msg):
-        return {'error': msg}
+        pass
 
     def get_usage(self):
         return usage
@@ -65,8 +63,6 @@ class PrologKernel(Kernel):
             yield X.value
 
     def process_prolog(self, code: str):
-        # TODO, check if is a fact, rule or query
-
         assertz = Functor("assertz", 1)
         father = Functor("father", 2)
         # check if call worked, 1 if true I think
