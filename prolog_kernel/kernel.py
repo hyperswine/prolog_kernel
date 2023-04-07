@@ -1,4 +1,7 @@
 from ipykernel.kernelbase import Kernel
+from pyswip import Prolog
+
+# prolog = Prolog()
 
 usage = """\
 Rules:
@@ -44,21 +47,34 @@ class PrologKernel(Kernel):
         'file_extension': '.txt'
     }
 
-    # todo, I think just return {'message': msg}
     def print(self, msg):
         return {'message': msg}
 
-    # todo, I think just return {'error': msg}
     def error(self, msg):
         return {'error': msg}
 
     def get_usage(self):
         return usage
+    
+    def process_prolog(self, code):
+        Prolog.assertz("father(michael, john)")
+        Prolog.assertz("father(michael, gina)")
+
+        res2 = ""
+        try:
+            for soln in Prolog.query("father(michael, X)"):
+                res2 += f"{soln}\n"
+        except Exception as e:
+            res2 += f"{e}\n"
+
+        return res2
 
     def do_execute(self, code, silent, store_history=True, user_expressions=None,
                    allow_stdin=False):
         if not silent:
-            stream_content = {'name': 'stdout', 'text': code}
+            code2 = self.process_prolog(code)
+
+            stream_content = {'name': 'stdout', 'text': code2}
             self.send_response(self.iopub_socket, 'stream', stream_content)
 
         return {
