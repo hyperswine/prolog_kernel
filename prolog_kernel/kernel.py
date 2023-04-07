@@ -40,7 +40,8 @@ class PrologKernel(Kernel):
     language_info = {
         'mimetype': 'text/plain',
         'name': 'Prolog',
-        'file_extension': '.pl'
+        # 'file_extension': '.pl'
+        'file_extension': '.txt'
     }
 
     # todo, I think just return {'message': msg}
