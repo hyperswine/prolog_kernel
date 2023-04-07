@@ -13,14 +13,16 @@ kernel_json = {
     "language": "prolog",
 }
 
+
 def install_my_kernel_spec(user=True, prefix=None):
     with TemporaryDirectory() as td:
         os.chmod(td, 0o755)  # Starts off as 700, not user readable
         with open(os.path.join(td, 'kernel.json'), 'w') as f:
             json.dump(kernel_json, f, sort_keys=True)
         print('Installing Jupyter kernel spec')
-        cur_path = os.path.dirname(os.path.realpath(__file__))
-        for logo in ["assets/logo-32x32.png", "assets/logo-64x64.png"]:
+        cur_path = os.path.dirname(os.path.realpath(__file__)) + "/assets/"
+        # print('Path to assets', cur_path)
+        for logo in ["logo-32x32.png", "logo-64x64.png"]:
             try:
                 shutil.copy(os.path.join(cur_path, logo), td)
             except FileNotFoundError:

@@ -39,7 +39,7 @@ class PrologKernel(Kernel):
     # not sure about file extensions
     language_info = {
         'mimetype': 'text/plain',
-        'name': 'Prolog',
+        'name': 'prolog',
         # 'file_extension': '.pl'
         'file_extension': '.txt'
     }
