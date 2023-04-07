@@ -36,22 +36,18 @@ class PrologKernel(Kernel):
     language_version = '0.1'
     banner = "Prolog kernel - it just works"
     # search = None
-    # or text/x-prolog
-    # 'codemirror_mode': {'name': 'prolog'},
-    # 'pygments_lexer': 'prolog',
-    # not sure about file extensions
     language_info = {
-        'mimetype': 'text/plain',
+        'mimetype': 'text/x-prolog',
         'name': 'prolog',
-        # 'file_extension': '.pl'
-        'file_extension': '.txt'
+        'file_extension': '.pl',
+        'pygments_lexer': 'prolog',
     }
 
     def __init__(self, **kwargs):
-        Kernel.__init__(self, **kwargs)
-
         self.assertz = Functor("assertz", 1)
-        self.X = Variable()
+        # self.X = Variable()
+
+        Kernel.__init__(self, **kwargs)
 
     def print(self, msg):
         return {'message': msg}
@@ -65,24 +61,25 @@ class PrologKernel(Kernel):
     def process_prolog(self, code):
         # check if is a fact, rule or query
 
-        res2 = ""
+        assertz = Functor("assertz", 1)
+
+        res = ""
 
         father = Functor("father", 2)
-        call(self.assertz(father("michael", "john")))
+        call(assertz(father("michael", "john")))
         X = Variable()
         q = Query(father("michael", X))
         while q.nextSolution():
-            res2 += X.value + " "
+            res += X.value + " "
         q.closeQuery()
 
-        return res2
+        return "empty" if res == "" else res
 
     def do_execute(self, code, silent, store_history=True, user_expressions=None,
                    allow_stdin=False):
         if not silent:
-            code2 = self.process_prolog(code)
-
-            stream_content = {'name': 'stdout', 'text': code2}
+            stream_content = {'name': 'stdout',
+                              'text': self.process_prolog(code)}
             self.send_response(self.iopub_socket, 'stream', stream_content)
 
         return {
