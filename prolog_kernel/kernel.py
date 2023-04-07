@@ -1,25 +1,12 @@
 from functools import reduce
 from ipykernel.kernelbase import Kernel
-from pyswip import Functor, Variable, Query, call
+from pyswip import Prolog, Variable
 
 usage = """\
 Rules:
     child(stephanie).
     child(thad).
-    mother_child(trude, sally).
- 
-    father_child(tom, sally).
-    father_child(tom, erica).
-    father_child(mike, tom).
- 
-    sibling(X, Y): parent_child(Z, X), parent_child(Z, Y).
- 
-    parent_child(X, Y): father_child(X, Y).
-    parent_child(X, Y): mother_child(X, Y).
-
-    weather(sunny): NOT weather(rainy).
-
-    weather(sunny): NOT weather(rainy), NOT weather(cloudy).
+    ...
 
 Queries:
     child(NAME)?
@@ -27,14 +14,13 @@ Queries:
     father_child(Father, Child)?
 """
 
-# TODO: Implement this, especially redo and complete process_prolog
+
 class PrologKernel(Kernel):
     implementation = 'Prolog'
     implementation_version = '1.0'
     language = 'prolog'
     language_version = '0.1'
     banner = "Prolog kernel - it just works"
-    # search = None
     language_info = {
         'mimetype': 'text/x-prolog',
         'name': 'prolog',
@@ -43,9 +29,7 @@ class PrologKernel(Kernel):
     }
 
     def __init__(self, **kwargs):
-        self.assertz = Functor("assertz", 1)
-        # self.X = Variable()
-
+        self.prolog = Prolog()
         Kernel.__init__(self, **kwargs)
 
     def print(self, msg):
@@ -57,23 +41,29 @@ class PrologKernel(Kernel):
     def get_usage(self):
         return usage
 
-    def query_solutions(self, query: Query):
-        X = Variable()
-        while query.nextSolution():
-            yield X.value
-
     def process_prolog(self, code: str):
-        assertz = Functor("assertz", 1)
-        father = Functor("father", 2)
-        # check if call worked, 1 if true I think
-        call(assertz(father("michael", "john")))
+        match code:
+            case code if code.endswith("?"): return self.handle_query(code)
+            case _: return self.handle_assertion(code)
 
-        X = Variable()
-        q = Query(father("michael", X))
+    def handle_query(self, code):
+        query_str = code[:-1]  # Remove the '?' at the end
+        solutions = []
 
-        # q.closeQuery()
+        try:
+            for sol in self.prolog.query(query_str):
+                solutions.append(sol)
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-        return str(reduce(lambda acc, next: acc + next, [x for x in self.query_solutions(q)]))
+        return str(solutions)
+
+    def handle_assertion(self, code):
+        try:
+            self.prolog.assertz(code)
+            return "Assertion added."
+        except Exception as e:
+            return f"Error: {str(e)}"
 
     def do_execute(self, code, silent, store_history=True, user_expressions=None,
                    allow_stdin=False):

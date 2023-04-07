@@ -6,7 +6,7 @@ class PrologKernelTests(jkt.KernelTests):
     kernel_name = "prolog"
     language_name = "prolog"
     file_extension = ".pl"
-    code_x = "hello, world"
+    code_hello_world = "hello, world"
 
 
 if __name__ == "__main__":
