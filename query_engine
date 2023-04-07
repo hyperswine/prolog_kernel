@@ -31,6 +31,7 @@ class Atom(object):
             else:
                 self.chars = chars
 
+    @classmethod
     def fromTerm(cls, term):
         if isinstance(term, Term):
             term = term.handle
@@ -41,7 +42,6 @@ class Atom(object):
         a = atom_t()
         if PL_get_atom(term, byref(a)):
             return cls(a.value, getAtomChars(term))
-    fromTerm = classmethod(fromTerm)
 
     def __del__(self):
         if not cleaned:
@@ -210,18 +210,14 @@ class Functor(object):
 
         f = functor_t()
         if PL_get_functor(term, byref(f)):
-            # get args
             args = []
             arity = PL_functor_arity(f.value)
-            # let's have all args be consecutive
             a0 = PL_new_term_refs(arity)
             for i, a in enumerate(range(1, arity + 1)):
                 if PL_get_arg(a, term, a0 + i):
                     args.append(getTerm(a0 + i))
 
             return cls(f.value, args=args, a0=a0)
-
-    # fromTerm = classmethod(fromTerm)
 
     value = property(lambda s: s.__value)
 

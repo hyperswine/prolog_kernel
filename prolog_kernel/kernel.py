@@ -1,12 +1,25 @@
 from functools import reduce
 from ipykernel.kernelbase import Kernel
-from pyswip import Prolog, Variable
+from pyswip import Prolog, Functor, Query, Variable, call, Term
 
 usage = """\
 Rules:
     child(stephanie).
     child(thad).
-    ...
+    mother_child(trude, sally).
+ 
+    father_child(tom, sally).
+    father_child(tom, erica).
+    father_child(mike, tom).
+ 
+    sibling(X, Y): parent_child(Z, X), parent_child(Z, Y).
+ 
+    parent_child(X, Y): father_child(X, Y).
+    parent_child(X, Y): mother_child(X, Y).
+
+    weather(sunny): NOT weather(rainy).
+
+    weather(sunny): NOT weather(rainy), NOT weather(cloudy).
 
 Queries:
     child(NAME)?
@@ -29,7 +42,6 @@ class PrologKernel(Kernel):
     }
 
     def __init__(self, **kwargs):
-        self.prolog = Prolog()
         Kernel.__init__(self, **kwargs)
 
     def print(self, msg):
@@ -50,15 +62,51 @@ class PrologKernel(Kernel):
         query_str = code[:-1]  # Remove the '?' at the end
 
         try:
-            res = str([str(sol) for sol in self.prolog.query(query_str)])
+            # Parse the query string into a Functor and its arguments.
+            functor_name, args_str = query_str.split("(", 1)
+            args_str = args_str.rstrip(")")
+            args = args_str.split(", ")
+
+            # Convert the arguments to either Variable or a string (if a constant).
+            variables = []
+            converted_args = []
+            for arg in args:
+                if arg.isupper():
+                    var = Variable(arg)
+                    variables.append(var)
+                    converted_args.append(var)
+                else:
+                    converted_args.append(arg)
+
+            # Create the Functor object with the parsed name and arguments.
+            functor = Functor(functor_name, len(converted_args))
+
+            # Execute the query.
+            query = Query(functor(*converted_args))
+
+            # Collect results.
+            results = []
+            while query.nextSolution():
+                result = {str(var): var.value for var in variables}
+                results.append(result)
+
+            # Close the query.
+            query.closeQuery()
+
+            res = str(results)
         except Exception as e:
             res = f"Error: {str(e)}"
-        
+
         return res
 
     def handle_assertion(self, code):
         try:
-            self.prolog.assertz(code)
+            assertz = Functor("assertz", 1)
+            terms = code.split("(")
+            functor_name = terms[0]
+            arguments = terms[1].strip(")").split(", ")
+            functor = Functor(functor_name, len(arguments))
+            call(assertz(functor(*arguments)))
             return "Assertion added."
         except Exception as e:
             return f"Error: {str(e)}"
